@@ -1,0 +1,44 @@
+name: Linting and Integration Test
+
+on:
+  push:
+    paths:
+      - 'code/**'
+      - 'tests/**'
+      - '.github/workflows/tests.yml'
+  pull_request:
+    paths:
+      - 'code/**'
+      - 'tests/**'
+      - '.github/workflows/tests.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check Out Repository
+        id: checkout_repository
+        uses: actions/checkout@master
+        with:
+          ref: ${{github.ref}}
+
+      - name: Set up Python 3.8
+        id: python_setup
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.8"
+
+      - name: Lint
+        id: python_linting
+        run: |
+          pip install flake8
+          flake8 code/ --count --ignore=E501,F401 --show-source --statistics
+          flake8 tests/ --count --ignore=E501,F401 --show-source --statistics
+      
+      - name: Test
+        id: python_test
+        run: |
+          pip install pytest
+          pytest
